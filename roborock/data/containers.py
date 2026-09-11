@@ -162,13 +162,14 @@ class RoborockBase:
 
         return result
 
-    def as_dict(self) -> dict:
+    def as_dict(self, exclude: set[str] | None = None) -> dict:
+        exclude_set = exclude or set()
         return asdict(
             self,
             dict_factory=lambda _fields: {
                 _camelize(key): value.value if isinstance(value, Enum) else value
                 for (key, value) in _fields
-                if value is not None
+                if value is not None and key not in exclude_set
             },
         )
 
@@ -345,6 +346,24 @@ class HomeDataRoom(RoborockBase):
 class HomeDataScene(RoborockBase):
     id: int
     name: str
+
+
+@dataclass
+class FirmwareInfo(RoborockBase):
+    """Firmware/OTA info from the cloud (`ota/firmware/{duid}/updatev2`)."""
+
+    version: str | None = None
+    """Latest available firmware version."""
+    current_version: str | None = None
+    """Currently installed firmware version."""
+    updatable: bool | None = None
+    """Whether a newer firmware is available to install."""
+    desc: str | None = None
+    """Release notes / description."""
+    release_time: str | None = None
+    """Release date of the available firmware as an ISO-8601 date (``YYYY-MM-DD``)."""
+    force_update: bool | None = None
+    """Whether the update is mandatory (cannot be skipped)."""
 
 
 @dataclass
